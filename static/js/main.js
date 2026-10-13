@@ -2,6 +2,7 @@ import { applyI18n, setLang, getLang, onLangChange, t } from './i18n.js';
 import { createPad } from './pad.js';
 import { loadInfo, predictServer, predictBrowser, savePad, validLabels } from './predict.js';
 import { LatencyChart } from './chart.js';
+import { createCameraInput } from './camera.js';
 import * as ui from './ui.js';
 
 const $ = id => document.getElementById(id);
@@ -25,6 +26,19 @@ $('undo').onclick = () => pad.undo();
 $('clear').onclick = () => pad.clear();
 $('width').oninput = e => { pad.setWidth(+e.target.value); $('wv').textContent = e.target.value; };
 $('width').dispatchEvent(new Event('input'));
+
+// ---------- hand tracking (camera) ----------
+const camera = createCameraInput({ pad, video: $('cam-video'), overlay: $('cam-overlay'), row: $('cam-row'), pen: $('pen'), status: $('cam-status') });
+const CAM_ERRORS = { insecure: 'toast.cam_insecure', denied: 'toast.cam_denied', nocamera: 'toast.cam_none', load: 'toast.cam_load' };
+function markCamera(on) { $('cam-toggle').classList.toggle('is-on', on); $('cam-toggle').setAttribute('aria-pressed', on); }
+$('cam-toggle').onclick = async () => {
+  const btn = $('cam-toggle');
+  if (camera.on) { camera.stop(); markCamera(false); return; }
+  btn.disabled = true; markCamera(true);
+  try { await camera.start(); }
+  catch (err) { console.error(err); markCamera(false); ui.toast(t(CAM_ERRORS[err.code] || 'toast.cam_load'), 'error'); }
+  btn.disabled = false;
+};
 
 // ---------- real-time rule: one request in flight, one follow-up with the freshest canvas ----------
 function requestPredict() { if (state.inflight) { state.pending = true; return; } run(); }
@@ -108,9 +122,9 @@ document.querySelectorAll('#mode-group button').forEach(btn => btn.onclick = () 
 });
 
 // ---------- model switch ----------
-document.querySelectorAll('.option').forEach(btn => btn.onclick = () => {
+document.querySelectorAll('#backend-group .option').forEach(btn => btn.onclick = () => {
   state.backend = btn.dataset.backend;
-  document.querySelectorAll('.option').forEach(b => { const on = b === btn; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on); });
+  document.querySelectorAll('#backend-group .option').forEach(b => { const on = b === btn; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on); });
   state.inferenceMs = null; refreshStats(); ui.renderPrediction(state.last, backendName());
   if (state.last) requestPredict();
 });

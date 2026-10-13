@@ -127,3 +127,19 @@ kbd { font: 700 .78rem var(--font); background: var(--surface-2); border: 1px so
 .stage-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .stage-note { color: var(--muted); font-size: .78rem; }
 @media (max-width: 480px) { .stage-row { grid-template-columns: 105px minmax(35px, 1fr) 68px; gap: 7px; } }
+
+/* hand tracking */
+.pad-stage { position: relative; width: 100%; max-width: 420px; }
+.pen { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; border: 2px solid var(--accent-2); pointer-events: none; box-sizing: border-box; transition: background .08s; }
+.pen.down { background: var(--accent-2); }
+.pen.clearing { border-color: var(--danger); background: conic-gradient(var(--danger) calc(var(--p) * 360deg), transparent 0); }
+.cam-row { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+.cam-pip { position: relative; width: min(46%, 200px); aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--canvas); border: 1px solid var(--border); flex: none; }
+.cam-pip video, .cam-pip canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); object-fit: cover; }
+.cam-info { display: grid; gap: 4px; min-width: 0; }
+.cam-info b { font-size: .95rem; }
+.cam-info b::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 8px; }
+.cam-info b[data-state="cam.down"]::before { background: var(--accent-2); }
+.cam-info b[data-state="cam.up"]::before { background: var(--accent); }
+.cam-info b[data-state="cam.clearing"]::before { background: var(--danger); }
+.cam-info small { color: var(--muted); font-size: .78rem; line-height: 1.35; }
